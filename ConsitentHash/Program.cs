@@ -128,8 +128,8 @@ namespace ConsitentHash
         // https://medium.com/@dgryski/consistent-hashing-algorithmic-tradeoffs-ef6b8e2fcae8
         static void Main(string[] args)
         {
-//            Test();
-//            ConsistencyTest(4, 10, 5);
+            Test();
+            ConsistencyTest(4, 10, 5);
             ServerAddTest(3, 8, 50);
         }
     }
