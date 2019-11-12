@@ -80,7 +80,7 @@ namespace ConsitentHash
     class ConsistentHash<T>
     {
         SortedDictionary<int, T> circle = new SortedDictionary<int, T>();
-        int _replicate = 100; //default _replicate count
+        int _replicate = 1000; //default _replicate count
         int[] ayKeys = null; //cache the ordered keys for better performance
 
         //it's better you override the GetHashCode() of T.

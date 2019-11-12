@@ -14,22 +14,45 @@ namespace ConsitentHash
 
         public override int GetHashCode()
         {
-            return ("svr_" + ID).GetHashCode();
+            // https://andrewlock.net/why-is-string-gethashcode-different-each-time-i-run-my-program-in-net-core/
+            String str = "svr_" + ID;
+            unchecked
+            {
+                int hash1 = (5381 << 16) + 5381;
+                int hash2 = hash1;
+
+                for (int i = 0; i < str.Length; i += 2)
+                {
+                    hash1 = ((hash1 << 5) + hash1) ^ str[i];
+                    if (i == str.Length - 1)
+                        break;
+                    hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
+                }
+
+                return hash1 + (hash2 * 1566083941);
+            }
         }
     }
 
     class Program
     {
-        private static void Test()
+        private static List<Server> CreateHash(int numServers, out ConsistentHash<Server> ch)
         {
             List<Server> servers = new List<Server>();
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < numServers; i++)
             {
                 servers.Add(new Server(i));
             }
 
-            ConsistentHash<Server> ch = new ConsistentHash<Server>();
+            ch = new ConsistentHash<Server>();
             ch.Init(servers);
+
+            return servers;
+        }
+
+        private static void Test()
+        {
+            var servers = CreateHash(1000, out var ch);
 
             int search = 100000;
 
@@ -40,7 +63,6 @@ namespace ConsitentHash
                 int temp = ch.GetNode(i.ToString()).ID;
 
                 ay1[i] = temp;
-                Console.WriteLine(temp);
             }
 
             TimeSpan ts = DateTime.Now - start;
@@ -70,14 +92,7 @@ namespace ConsitentHash
 
         private static void ConsistencyTest(int numServers, int numTests, int numRuns)
         {
-            List<Server> servers = new List<Server>();
-            for (int i = 0; i < numServers; i++)
-            {
-                servers.Add(new Server(i));
-            }
-
-            ConsistentHash<Server> ch = new ConsistentHash<Server>();
-            ch.Init(servers);
+            CreateHash(numServers, out var ch);
 
             for (int k = 0; k < numRuns; k++)
             {
@@ -85,17 +100,37 @@ namespace ConsitentHash
                 for (int i = 0; i < numTests; i++)
                 {
                     int temp = ch.GetNode(i.ToString()).ID;
-                    
-                    Console.Write(" {0}",temp);
+
+                    Console.Write(" {0}", temp);
                 }
+
                 Console.WriteLine(" ]\n");
             }
         }
 
+        private static void ServerAddTest(int numServersFrom, int numServersTo, int numTests)
+        {
+            for (int ns = numServersFrom; ns <= numServersTo; ns++)
+            {
+                CreateHash(ns, out var ch);
+                Console.Write("Num servers {0}: [", ns);
+                for (int i = 0; i < numTests; i++)
+                {
+                    int temp = ch.GetNode(i.ToString()).ID;
+
+                    Console.Write(" {0}", temp);
+                }
+
+                Console.WriteLine(" ]\n");
+            }
+        }
+
+        // https://medium.com/@dgryski/consistent-hashing-algorithmic-tradeoffs-ef6b8e2fcae8
         static void Main(string[] args)
         {
 //            Test();
-            ConsistencyTest(3, 10, 5);
+//            ConsistencyTest(4, 10, 5);
+            ServerAddTest(3, 8, 50);
         }
     }
 }
