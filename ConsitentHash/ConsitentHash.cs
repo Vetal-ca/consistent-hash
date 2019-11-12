@@ -109,9 +109,10 @@ namespace ConsitentHash
 
         private void Add(T node, bool updateKeyArray)
         {
+            String hashStr = node.GetHashCode().ToString();
             for (int i = 0; i < _replicate; i++)
             {
-                int hash = BetterHash(node.GetHashCode().ToString() + i);
+                int hash = BetterHash(hashStr + i);
                 circle[hash] = node;
             }
 
