@@ -50,11 +50,11 @@ namespace ConsitentHash
             return servers;
         }
 
-        private static void Test()
+        private static void Test(int numServers, int numKeys)
         {
-            var servers = CreateHash(1000, out var ch);
+            var servers = CreateHash(numServers, out var ch);
 
-            int search = 100000;
+            int search = numKeys;
 
             DateTime start = DateTime.Now;
             SortedList<int, int> ay1 = new SortedList<int, int>();
@@ -66,7 +66,7 @@ namespace ConsitentHash
             }
 
             TimeSpan ts = DateTime.Now - start;
-            Console.WriteLine(search + " each use macro seconds: " + (ts.TotalMilliseconds / search) * 1000);
+            Console.WriteLine(search + " each use micro seconds: " + (ts.TotalMilliseconds / search) * 1000);
 
             //ch.Add(new Server(1000));
             ch.Remove(servers[1]);
@@ -128,7 +128,7 @@ namespace ConsitentHash
         // https://medium.com/@dgryski/consistent-hashing-algorithmic-tradeoffs-ef6b8e2fcae8
         static void Main(string[] args)
         {
-            Test();
+            Test(3, 3000);
             ConsistencyTest(4, 10, 5);
             ServerAddTest(3, 8, 50);
         }
